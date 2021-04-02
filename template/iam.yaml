@@ -1,0 +1,32 @@
+Description: Create an IAM user and policy to manage Route 53 resource records sets in a specific hosted zone
+
+# Create an IAM user (without credentials) and a minimal IAM policy granting the user the ability to manage
+# Route 53 resource record sets.
+# https://docs.aws.amazon.com/Route53/latest/APIReference/API_ChangeResourceRecordSets.html
+
+# Following deployment, you will create access keys for the user.
+# https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+
+Parameters:
+  Route53HostedZone:
+    Type: String
+    Description: Provide the Route 53 Hosted Zone that this user is allowed to manage
+
+Resources:
+  IamUser:
+    Type: AWS::IAM::User
+    Properties: 
+      ManagedPolicyArns: 
+        - !Ref IamManagedPolicy
+
+  IamManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties: 
+      Description: !Sub Manage Route 53 resource record sets in ${Route53HostedZone} hosted zone
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: ChangeResourceRecordSets
+            Effect: Allow
+            Action: route53:ChangeResourceRecordSets
+            Resource: !Sub arn:${AWS::Partition}:route53:::hostedzone/${Route53HostedZone}
